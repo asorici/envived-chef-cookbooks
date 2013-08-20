@@ -1,0 +1,77 @@
+<VirtualHost *:8800>
+    ServerName <%= @params[:server_name] %>
+    ServerAlias <% @params[:server_aliases].each do |a| %><%= a %> <% end %>
+    DocumentRoot <%= @params[:docroot] %>
+    
+    WSGIDaemonProcess envived user=<%= @params[:wsgi_daemon_process_user] %> group=<%= @params[:wsgi_daemon_process_group] %>  threads=<%= @params[:wsgi_daemon_process_threads] %> 
+    WSGIProcessGroup envived
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    
+    WSGIDaemonProcess gcm-jobs user=<%= @params[:wsgi_daemon_process_user] %>  group=<%= @params[:wsgi_daemon_process_group] %>  processes=1 threads=1
+
+    Alias /media/ <%= @params[:docroot] %>/media/
+    Alias /static/ <%= @params[:docroot] %>/static/
+    Alias /templates/ <%= @params[:docroot] %>/templates/
+
+    <Directory <%= @params[:docroot] %>>
+        Order deny,allow
+        Allow from all
+    </Directory>
+
+    <Directory <%= @params[:docroot] %>/media>
+        Options FollowSymLinks
+        Order deny,allow
+        Allow from all
+    </Directory>
+
+    <Directory <%= @params[:docroot] %>/static>
+        Options FollowSymLinks
+        Order deny,allow
+        Allow from all
+    </Directory>
+
+    <Directory <%= @params[:docroot] %>/templates>
+        Options FollowSymLinks
+        Order deny,allow
+        Allow from all
+    </Directory>
+    
+    <Directory <%= @params[:docroot] %>/etc/apache>
+        Order deny,allow
+        Allow from all
+    </Directory>
+
+    WSGIScriptAlias / <%= @params[:docroot] %>/etc/apache/django.wsgi
+
+
+    <Location /server-status>
+      SetHandler server-status
+
+      Order Deny,Allow
+      Deny from all
+      Allow from 127.0.0.1
+    </Location>
+
+    LogLevel info
+    ErrorLog <%= node['apache']['log_dir'] %>/<%= @params[:name] %>-error.log
+    CustomLog <%= node['apache']['log_dir'] %>/<%= @params[:name] %>-access.log combined
+
+    <% if @params[:directory_index] -%>
+    DirectoryIndex <%= [@params[:directory_index]].flatten.join " " %>
+    <% end -%>
+
+    RewriteEngine On
+    RewriteLog <%= node['apache']['log_dir'] %>/<%= @application_name %>-rewrite.log
+    RewriteLogLevel 0
+
+    # Canonical host, <%= @params[:server_name] %>
+    RewriteCond %{HTTP_HOST}   !^<%= @params[:server_name] %> [NC]
+    RewriteCond %{HTTP_HOST}   !^$
+    RewriteRule ^/(.*)$        http://<%= @params[:server_name] %>/$1 [L,R=301]
+
+    RewriteCond %{DOCUMENT_ROOT}/system/maintenance.html -f
+    RewriteCond %{SCRIPT_FILENAME} !maintenance.html
+    RewriteRule ^.*$ /system/maintenance.html [L]
+
+</VirtualHost>

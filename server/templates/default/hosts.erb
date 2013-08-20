@@ -1,0 +1,5 @@
+127.0.0.1     localhost localhost.localdomain
+
+<% @hosts.each_pair do |name, info| -%>
+<%= info[:internal_ip] %> <%= info[:external_ip] %> <%= name %>
+<% end -%>

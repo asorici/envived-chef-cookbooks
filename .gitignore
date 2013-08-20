@@ -1,0 +1,4 @@
+nodes/
+roles/
+fabfile.py
+solo.rb
