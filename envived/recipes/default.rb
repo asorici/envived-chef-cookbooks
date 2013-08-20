@@ -5,7 +5,7 @@ include_recipe "mysql::server"
 include_recipe "database"
 include_recipe "apache2"
 include_recipe "memcached"
-
+include_recipe "xslt"
 
 # Setup Envived MySQL database
 mysql_database "create envived database" do
