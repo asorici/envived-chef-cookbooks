@@ -5,6 +5,8 @@ include_recipe "mysql::server"
 include_recipe "database"
 include_recipe "apache2"
 include_recipe "memcached"
+include_recipe "libevent"
+include_recipe "redis"
 include_recipe "xslt"
 
 # Setup Envived MySQL database
